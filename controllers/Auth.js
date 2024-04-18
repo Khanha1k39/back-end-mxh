@@ -1,4 +1,6 @@
-const { where } = require("sequelize");
+const { Op } = require("sequelize");
+const { validationResult } = require("express-validator");
+
 const User = require("./../models/User");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -34,6 +36,11 @@ exports.getLogin = (req, res, next) => {
   res.json();
 };
 exports.postSignUp = (req, res, next) => {
+  const error = validationResult(req);
+  console.log(error);
+  if (!error.isEmpty()) {
+    return res.status(422).json({});
+  }
   User.findOne({ where: { email: req.body.email } })
     .then((user) => {
       if (user) {
@@ -66,20 +73,20 @@ exports.postResetPassWord = (req, res, next) => {
       console.log(user);
       crypto.randomBytes(32, (err, buf) => {
         if (err) {
-          json.status(400).json();
+          res.status(400).json();
         }
-
         const token = buf.toString("hex");
-        console.log(token);
         user.resetToken = token;
         user.resetTokenExpiration = Date.now() + 3600000;
         user.save().then((result) => {
           mailService({
             from: '" Mạng xã hội  👻" <duongkhanhb1k39@gmail.com>', // sender address
-            to: user.email, // list of receivers
-            subject: "Đặt lại mật khẩu", // Subject line
-            text: "Hello world?", // plain text body
-            html: `<b>Vào <a href = "http://localhost:8080/reset/${token}"> link </a> sau để đặt lại mật khẩu?</b>`, // html body})
+            to: user.email,
+            subject: "Đặt lại mật khẩu",
+            text: "Hello world?",
+            html: `<b>Vào <a href = "http://localhost:3000/reset/${token}"> link </a> sau để đặt lại mật khẩu?</b>`, // html body})
+          }).then(() => {
+            res.status(201).json();
           });
         });
       });
@@ -88,4 +95,30 @@ exports.postResetPassWord = (req, res, next) => {
     .catch((err) => {
       console.log(err);
     });
+};
+exports.postChangePassWord = (req, res, next) => {
+  const token = req.params.token;
+  const password = req.body.password;
+  User.findOne({
+    where: { resetToken: token, resetTokenExpiration: { [Op.gt]: Date.now() } },
+  })
+    .then((user) => {
+      console.log(user);
+      if (!user) {
+        return res.json({});
+      } else {
+        bcrypt
+          .hash(password, 12)
+          .then((hashedPassword) => {
+            user.password = hashedPassword;
+            return user.save();
+          })
+          .then((user) => {
+            console.log(user);
+            return res.json({ message: "success" });
+          });
+      }
+    })
+
+    .catch((err) => console.log(err));
 };

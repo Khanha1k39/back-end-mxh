@@ -13,10 +13,14 @@ const postRoute = require("./routers/post");
 const mailService = require("./services/emailServies");
 const scrf = require("csurf");
 const emailServies = require("./services/emailServies");
-
+const multer = require("multer");
 const scrfProtection = scrf();
-
+const upload = multer({ dest: "uploads/" });
 app.use(bodyParser.json());
+
+app.use(express.urlencoded({ extended: true }));
+// app.use(multer().single("image"));
+
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Credentials", true);
   res.setHeader(
@@ -54,9 +58,33 @@ app.use((req, res, next) => {
       res.json(err);
     });
 });
+app.post("/postimage", upload.single("image"), (req, res, next) => {
+  console.log(req.body);
+  console.log(req.files);
+  console.log(req);
+  res.json({ message: "Successfully uploaded files" });
+});
 app.use(userRoute);
 app.use(postRoute);
 app.use(authRoute);
+//test sendemail
+app.use("/sendemail", (req, res, next) => {
+  //test sendemail
+  mailService({
+    from: '" Mạng xã hội  👻" <duongkhanhb1k39@gmail.com>',
+    to: "khanh.dq212846@sis.hust.edu.vn",
+    subject: "Đặt lại mật khẩu",
+    text: "Hello world?",
+    html: `<b>Vào  sau để đặt lại mật khẩu?</b>`,
+  })
+    .then(() => {
+      res.json("hh");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
 User.hasMany(Post);
 Post.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
 
