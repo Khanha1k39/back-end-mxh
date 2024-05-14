@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const authRoute = require("./routers/Auth");
 const userRoute = require("./routers/user");
+const searchRoute = require("./routers/Search");
 const Post = require("./models/Post");
 const User = require("./models/User");
 const sessionDb = require("./util/session");
@@ -16,7 +17,14 @@ const emailServies = require("./services/emailServies");
 const multer = require("multer");
 const scrfProtection = scrf();
 const upload = multer({ dest: "uploads/" });
+const jwt = require("jsonwebtoken");
+const messageRoute = require("./routers/Message");
+const Message = require("./models/Message");
+const protectRoute = require("./middlewares/ProtectRoute");
+var cookieParser = require("cookie-parser");
+
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
 // app.use(multer().single("image"));
@@ -58,38 +66,24 @@ app.use((req, res, next) => {
       res.json(err);
     });
 });
+
 app.post("/postimage", upload.single("image"), (req, res, next) => {
   console.log(req.body);
   console.log(req.files);
   console.log(req);
   res.json({ message: "Successfully uploaded files" });
 });
+// app.use(protectRoute);
 app.use(userRoute);
 app.use(postRoute);
 app.use(authRoute);
-//test sendemail
-app.use("/sendemail", (req, res, next) => {
-  //test sendemail
-  mailService({
-    from: '" Mạng xã hội  👻" <duongkhanhb1k39@gmail.com>',
-    to: "khanh.dq212846@sis.hust.edu.vn",
-    subject: "Đặt lại mật khẩu",
-    text: "Hello world?",
-    html: `<b>Vào  sau để đặt lại mật khẩu?</b>`,
-  })
-    .then(() => {
-      res.json("hh");
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
-
+app.use(searchRoute);
+app.use("/message", messageRoute);
 User.hasMany(Post);
 Post.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
-
+User.belongsToMany(User, { as: "receiver", through: Message });
 sequelize
-  .sync()
+  .sync({ force: false })
   .then((result) => {
     app.listen(8080);
   })

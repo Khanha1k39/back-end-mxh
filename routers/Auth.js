@@ -3,7 +3,7 @@ const authController = require("../controllers/Auth");
 const router = express.Router();
 const { query } = require("express-validator");
 
-router.get("/login", authController.getLogin);
+// router.get("/login", authController.getLogin);
 router.post("/login", authController.postLogin);
 router.post(
   "/signup",
@@ -12,5 +12,5 @@ router.post(
 );
 router.post("/resetpassword", authController.postResetPassWord);
 router.post("/reset/:token", authController.postChangePassWord);
-
+router.post("/logout", authController.postLogout);
 module.exports = router;
