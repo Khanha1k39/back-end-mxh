@@ -1,46 +1,47 @@
-const { Sequelize, DataTypes } = require("sequelize");
+// models/Conversation.js
+const { DataTypes } = require("sequelize");
 const sequelize = require("./../util/sequelize");
-// models/Message.js
 const User = require("./User");
-const Conversation = require("./Conversation");
 
-const Message = sequelize.define(
-  "Message",
+const Conversation = sequelize.define(
+  "Conversation",
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    conversation_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Conversation,
-        key: "conversation_id",
-      },
-    },
-    sender_id: {
+    user1_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: User,
-        key: "user_id",
+        key: "id",
       },
     },
-    content: {
-      type: DataTypes.TEXT,
+    user2_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      },
     },
-    sent_at: {
+    created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
   },
   {
     timestamps: false,
-    tableName: "messages",
+    tableName: "conversations",
+    indexes: [
+      {
+        unique: true,
+        fields: ["user1_id", "user2_id"],
+      },
+    ],
   }
 );
 
-module.exports = Message;
+module.exports = Conversation;

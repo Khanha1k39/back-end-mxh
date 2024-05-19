@@ -5,5 +5,8 @@ const messageController = require("../controllers/Message");
 
 const protectRoute = require("../middlewares/ProtectRoute");
 router.post("/send/:userId", messageController.sendMessage);
+router.get("/conversations", messageController.getConversations);
+
 router.get("/:userId", messageController.getMessages);
+
 module.exports = router;

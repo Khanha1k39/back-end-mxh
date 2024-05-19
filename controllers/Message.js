@@ -11,23 +11,36 @@ exports.sendMessage = async (req, res) => {
       return;
     }
     await Message.create({
-      message: "em an com chua",
+      message: req.body.message,
       userId: req.user.id,
       receiverId,
     });
-    res.send("haha");
+    res.send("Success");
   } catch (error) {
     console.log(error);
-    res.status(500).json("internal server error");
+    res.status(500).json(error);
+  }
+};
+exports.getConversations = async (req, res) => {
+  try {
+    console.log("day");
+
+    const users = await User.findAll();
+
+    console.log("day");
+    res.json(users);
+  } catch (error) {
+    res.status(400).json({ error });
   }
 };
 exports.getMessages = async (req, res) => {
   try {
+    console.log("requset ne");
     const { userId } = req.params;
     const user = await User.findOne({ where: { id: userId } });
 
     if (!user) {
-      res.status(400).json({ error: "User not found" });
+      res.status(400).json({ error: "User not found ne" });
       return;
     }
 
@@ -50,6 +63,6 @@ exports.getMessages = async (req, res) => {
     res.json(messages);
   } catch (error) {
     console.log(error);
-    res.status(500).json("internal server error");
+    res.status(500).json("internal server error send message");
   }
 };

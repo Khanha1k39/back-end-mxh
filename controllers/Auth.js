@@ -9,15 +9,14 @@ const mailService = require("./../services/emailServies");
 const { json } = require("body-parser");
 const { use } = require("../routers/Auth");
 const e = require("express");
+const { error } = require("console");
 exports.postLogin = (req, res, next) => {
   User.findOne({ where: { email: req.body.email } })
     .then((user) => {
       if (!user) {
-        return res.status(400).json("This email does not exist");
+        return res.status(400).json({ error: "This email does not exist" });
       }
-      console.log(req.body.password);
-      console.log(user);
-      // console.log(user.getDataValue("password"));
+
       bcrypt
         .compare(req.body.password, user.getDataValue("password"))
         .then((result) => {
@@ -32,7 +31,7 @@ exports.postLogin = (req, res, next) => {
             });
             res.json({ email: user.email, token });
           } else {
-            res.status(401).json("Password is wrong");
+            res.status(401).json({ error: "Password is wrong" });
           }
         });
     })
@@ -93,7 +92,7 @@ exports.postSignUp = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { email: req.body.email } });
     if (user) {
-      return res.status(400).json();
+      return res.status(400).json({ error: "This email has been registered" });
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 12);
 
@@ -109,7 +108,7 @@ exports.postSignUp = async (req, res, next) => {
     console.log(error);
     console.log("day");
 
-    res.status(500).json({ error: "internal server error " });
+    res.status(500).json({ error: "internal server error ,sign up " });
   }
 };
 exports.postResetPassWord = (req, res, next) => {
